@@ -6,10 +6,10 @@ const categorieFoodSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  image: {
-    type: String,
+  images: {
+    type: Array,
   },
-  restaurants: [
+  restaurantsId: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Restaurant",

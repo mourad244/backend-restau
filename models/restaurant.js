@@ -7,10 +7,8 @@ const restaurantSchema = new mongoose.Schema({
     minlength: 3,
     maxlength: 10,
   },
-  image: {
-    type: String,
-    minlength: 3,
-    maxlength: 50,
+  images: {
+    type: Array,
   },
   description: {
     type: String,
@@ -43,7 +41,7 @@ const restaurantSchema = new mongoose.Schema({
     type: Double,
   },
 
-  categorieFood: [
+  categorieFoodsId: [
     {
       type: mongoose.Schema.Types.ObjectId,
       ref: "CategorieFood",

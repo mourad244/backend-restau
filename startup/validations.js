@@ -1,21 +1,51 @@
 const Joi = require("joi");
 
 module.exports = {
-  patient: (restaurantObj) => {
+  restaurant: (restaurantObj) => {
     const schema = Joi.object({
       nom: Joi.string().min(3).max(10).required(),
-      image: Joi.string().min(3).max(50),
+      images: Joi.array().allow(null),
       description: Joi.string().min(3).max(50).required(),
-      h_ouverture: Joi.string().min(5).max(50).required(),
-      h_fermeture: Joi.string().min(5).max(50).required(),
+      h_ouverture: Joi.date(),
+      h_fermeture: Joi.date(),
       // email: Joi.string().min(5).max(50),
       telephone: Joi.string(),
       latitude: Joi.double(),
       longitude: Joi.double(),
 
-      categorieFood: Joi.array().items(Joi.objectId()),
+      categorieFoodsId: Joi.array().items(Joi.objectId()),
     });
 
     return schema.validate(restaurantObj);
+  },
+
+  food: (foodObj) => {
+    const schema = Joi.object({
+      nom: Joi.string().min(3).max(10).required(),
+      images: Joi.array().allow(null),
+      description: Joi.string().min(3).max(255),
+      prix: Joi.number().required(),
+      restaurantId: Joi.objectId(),
+    });
+    return schema.validate(foodObj);
+  },
+
+  categorieFood: (categorieFoodObj) => {
+    const schema = Joi.object({
+      nom: Joi.string().min(3).max(10).required(),
+      images: Joi.array().allow(null),
+      restaurantsId: Joi.array.items(Joi.objectId()),
+    });
+    return schema.validate(categorieFoodObj);
+  },
+
+  user: (userObj) => {
+    const schema = Joi.object({
+      name: Joi.string().min(2).max(50),
+      email: Joi.string().min(5).max(255).required().email(),
+      password: Joi.string().min(5).max(255).required(),
+    });
+
+    return schema.validate(userObj);
   },
 };
