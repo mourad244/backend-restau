@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const restaurantSchema = new mongoose.Schema({
   nom: {
     type: String,
+    required: true,
     minlength: 3,
     maxlength: 10,
   },
@@ -31,18 +32,15 @@ const restaurantSchema = new mongoose.Schema({
   // },
   telephone: {
     type: String,
-    required: true,
     minlength: 5,
     maxlength: 50,
   },
 
   latitude: {
-    type: String,
-    maxlength: 255,
+    type: Double,
   },
   longitude: {
-    type: String,
-    maxlength: 255,
+    type: Double,
   },
 
   categorieFood: [
