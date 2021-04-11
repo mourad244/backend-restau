@@ -17,10 +17,10 @@ const restaurantSchema = new mongoose.Schema({
     maxlength: 50,
   },
   h_ouverture: {
-    type: Date,
+    type: String,
   },
   h_fermeture: {
-    type: Date,
+    type: String,
   },
   // email: {
   //   type: String,
@@ -35,10 +35,10 @@ const restaurantSchema = new mongoose.Schema({
   },
 
   latitude: {
-    type: Double,
+    type: Number,
   },
   longitude: {
-    type: Double,
+    type: Number,
   },
 
   categorieFoodsId: [

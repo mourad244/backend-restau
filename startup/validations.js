@@ -6,12 +6,12 @@ module.exports = {
       nom: Joi.string().min(3).max(10).required(),
       images: Joi.array().allow(null),
       description: Joi.string().min(3).max(50).required(),
-      h_ouverture: Joi.date(),
-      h_fermeture: Joi.date(),
+      h_ouverture: Joi.string(),
+      h_fermeture: Joi.string(),
       // email: Joi.string().min(5).max(50),
       telephone: Joi.string(),
-      latitude: Joi.double(),
-      longitude: Joi.double(),
+      latitude: Joi.number(),
+      longitude: Joi.number(),
 
       categorieFoodsId: Joi.array().items(Joi.objectId()),
     });
