@@ -5,6 +5,7 @@ const uploadImages = require("../middleware/uploadImages");
 const deleteImages = require("../middleware/deleteImages");
 const { CategorieFood } = require("../models/categorieFood");
 const validations = require("../startup/validations");
+const getPathData = require("../middleware/getPathData");
 const fs = require("fs");
 const path = require("path");
 const router = express.Router();
@@ -35,26 +36,16 @@ router.post("/", auth, async (req, res) => {
   if (req.files == undefined) {
     return res.status(400).send({ message: "Please upload multiple images!" });
   }
+
   const { error } = validations.restaurant(req.body);
   if (error) {
-    console.log(req.files);
     deleteImages(req.files);
     return res.status(400).send(error.details[0].message);
   }
 
-  // const categorieFood = await CategorieFood.find({
-  //   _id: { $in: req.body.CategorieFoodIds },
-  // });
+  // get path from uploaded data
 
-  // if (!categorieFood) {
-  //   deleteImages(req.files);
-  //   return res.status(400).send("id categorieFood non trouvé.");
-  // }
-  let filtered = {};
-  for (let item in req.files) {
-    filtered[item] = req.files[item];
-  }
-  const { image: images } = filtered;
+  const { image: images } = getPathData(req.files);
   const {
     nom,
     description,
@@ -65,6 +56,18 @@ router.post("/", auth, async (req, res) => {
     longitude,
     categorieFoodsId,
   } = req.body;
+
+  // to comments if a another fonction verifies its existance before
+  if (categorieFoodsId) {
+    const categorieFood = await CategorieFood.find({
+      _id: { $in: categorieFoodsId },
+    });
+
+    if (categorieFood.length == 0) {
+      deleteImages(req.files);
+      return res.status(400).send("id categorieFood non trouvé.");
+    }
+  }
 
   const restaurant = new Restaurant({
     nom: nom,
@@ -84,68 +87,65 @@ router.post("/", auth, async (req, res) => {
 router.put("/:id", auth, async (req, res) => {
   try {
     await uploadImages(req, res);
-    const { error } = validations.restaurant(req.body);
-    if (error) {
-      deleteImages(req.files);
-      return res.status(400).send(error.details[0].message);
-    }
-
-    // const categorieFood = await CategorieFood.find({
-    //   _id: { $in: restaurant.CategorieFoodIds },
-    // });
-    // if (!categorieFood) {
-    //   deleteImages(req.files);
-    //   return res.status(400).send("id categorieFood non valide.");
-    // }
-
-    let filtered = {};
-    for (let item in req.files) {
-      filtered[item] = req.files[item];
-    }
-    const { image: images } = filtered;
-    const restaurant = await Restaurant.findOne({ _id: req.params.id });
-    if (restaurant == null) {
-      let pathImages = [];
-      for (const image of images) {
-        pathImages.push(image.path);
-      }
-
-      deleteImages(pathImages);
-      console.log("done");
-      return res.status(400).send(error.details[0].message);
-    }
-    if (images) restaurant.images.push(...images.map((file) => file.path));
-    const {
-      nom,
-      description,
-      h_ouverture,
-      h_fermeture,
-      telephone,
-      latitude,
-      longitude,
-      categorieFoodsId,
-    } = req.body;
-
-    restaurant.nom = nom;
-    restaurant.description = description;
-    restaurant.h_ouverture = h_ouverture;
-    restaurant.h_fermeture = h_fermeture;
-    restaurant.telephone = telephone;
-    restaurant.latitude = latitude;
-    restaurant.longitude = longitude;
-    restaurant.categorieFoodsId = categorieFoodsId;
-
-    await restaurant.save();
-
-    if (!restaurant)
-      return res.status(404).send("rendez vous avec cet id n'existe pas");
-
-    res.send(restaurant);
   } catch (error) {
     res.status(500).send({
       message: `Could not upload the images: ${req.files.originalname}. ${error}`,
     });
   }
+
+  const { error } = validations.restaurant(req.body);
+  if (error) {
+    deleteImages(req.files);
+    return res.status(400).send(error.details[0].message);
+  }
+
+  const { image: images } = getPathData(req.files);
+  const {
+    nom,
+    description,
+    h_ouverture,
+    h_fermeture,
+    telephone,
+    latitude,
+    longitude,
+    categorieFoodsId,
+  } = req.body;
+
+  // to comments if a another fonction verifies its existance before
+  if (categorieFoodsId) {
+    const categorieFood = await CategorieFood.find({
+      _id: { $in: categorieFoodsId },
+    });
+
+    if (categorieFood.length == 0) {
+      deleteImages(req.files);
+      return res.status(400).send("id categorieFood non trouvé.");
+    }
+  }
+
+  const restaurant = await Restaurant.findOne({ _id: req.params.id });
+  if (!restaurant) {
+    deleteImages(req.files);
+    return res.status(400).send("restaurant with this id not found");
+  }
+
+  if (images) restaurant.images.push(...images.map((file) => file.path));
+
+  restaurant.nom = nom;
+  restaurant.description = description;
+  restaurant.h_ouverture = h_ouverture;
+  restaurant.h_fermeture = h_fermeture;
+  restaurant.telephone = telephone;
+  restaurant.latitude = latitude;
+  restaurant.longitude = longitude;
+  restaurant.categorieFoodsId = categorieFoodsId;
+
+  await restaurant.save();
+
+  if (!restaurant)
+    return res.status(404).send("restaurant avec cet id n'existe pas");
+
+  res.send(restaurant);
 });
 
 router.get("/:id", validateObjectId, auth, async (req, res) => {
@@ -157,9 +157,7 @@ router.get("/:id", validateObjectId, auth, async (req, res) => {
 
 router.delete("/:id", auth, async (req, res) => {
   const restaurant = await Restaurant.findByIdAndRemove(req.params.id);
-  // restaurant.images.forEach((image) => fs.unlinkSync(image));
-  if (restaurant != null && restaurant.images != null)
-    deleteImages(restaurant.images);
+  if (restaurant && restaurant.images) deleteImages(restaurant.images);
   if (!restaurant)
     return res.status(404).send("restaurant avec cette id n'existe pas");
   res.send(restaurant);

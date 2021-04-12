@@ -3,6 +3,7 @@ const auth = require("../middleware/auth");
 const express = require("express");
 const uploadImages = require("../middleware/uploadImages");
 const deleteImages = require("../middleware/deleteImages");
+const getPathData = require("../middleware/getPathData");
 const { Restaurant } = require("../models/restaurant");
 const validations = require("../startup/validations");
 const fs = require("fs");
@@ -12,7 +13,10 @@ const router = express.Router();
 const validateObjectId = require("../middleware/validateObjectId");
 
 router.get("/", auth, async (req, res) => {
-  const categoriesFood = await CategorieFood.find().select("-__v").sort("nom");
+  const categoriesFood = await CategorieFood.find()
+    .populate("restaurantsId", "nom")
+    .select("-__v")
+    .sort("nom");
   res.send(categoriesFood);
 });
 
@@ -27,32 +31,42 @@ router.get("/:id", auth, async (req, res) => {
 router.post("/", auth, async (req, res) => {
   try {
     await uploadImages(req, res);
-    const { error } = validations.categorieFood(req.body);
-    if (error) {
-      deleteImages(req.files);
-      return res.status(400).send(error.details[0].message);
-    }
-
-    let filtered = {};
-    for (let item in req.files) {
-      filtered[item] = req.files[item];
-    }
-
-    const { nom, restaurantsId } = req.body;
-    const { image: images } = filtered;
-
-    const categorieFood = new CategorieFood({
-      nom: nom,
-      images: images ? images.map((file) => file.path) : [],
-      restaurantsId: restaurantsId,
-    });
-    await categorieFood.save();
-    res.send(categorieFood);
   } catch (error) {
     res.status(500).send({
       message: `Could not upload the images: ${req.files.originalname}. ${err}`,
     });
   }
+
+  if (req.files == undefined) {
+    return res.status(400).send({ message: "Please upload multiple images!" });
+  }
+
+  const { error } = validations.categorieFood(req.body);
+  if (error) {
+    deleteImages(req.files);
+    return res.status(400).send(error.details[0].message);
+  }
+
+  const { image: images } = getPathData(req.files);
+  const { nom, restaurantsId } = req.body;
+
+  if (restaurantsId) {
+    const restaurant = await Restaurant.find({
+      _id: { $in: restaurantsId },
+    });
+    if (restaurant.length == 0) {
+      deleteImages(req.files);
+      return res.status(400).send("id restaurant non trouvé.");
+    }
+  }
+
+  const categorieFood = new CategorieFood({
+    nom: nom,
+    images: images ? images.map((file) => file.path) : [],
+    restaurantsId: restaurantsId,
+  });
+  await categorieFood.save();
+  res.send(categorieFood);
 });
 
 router.put("/:id", auth, async (req, res) => {
