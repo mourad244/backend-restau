@@ -17,6 +17,6 @@ module.exports = function (app) {
   app.use("/restauapi/categoriesfood", categoriesFood);
   app.use("/restauapi/foods", foods);
   app.use("/restauapi/users", users);
-  app.use("/rstauapi/auth", auth);
+  app.use("/restauapi/auth", auth);
   app.use(error);
 };

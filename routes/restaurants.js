@@ -14,13 +14,17 @@ const _ = require("lodash");
 const validateObjectId = require("../middleware/validateObjectId");
 
 router.get("/", auth, async (req, res) => {
-  const restaurants = await Restaurant.find().select("-__v").sort("nom");
+  const restaurants = await Restaurant.find()
+    .populate("categorieFoodsId", "nom")
+    .select("-__v")
+    .sort("nom");
   res.send(restaurants);
 });
 
 router.get("/:id", auth, async (req, res) => {
   const restaurant = await Restaurant.findById(req.params.id).select("-__v");
-  if (!restaurant) return res.status(404).send("restaurant n'existe pas");
+  if (!restaurant)
+    return res.status(404).send("restaurant avec cette id n'existe pas");
   res.send(restaurant);
 });
 
@@ -142,8 +146,9 @@ router.put("/:id", auth, async (req, res) => {
 
   await restaurant.save();
 
+  // verifier si necessaire ou nn
   if (!restaurant)
-    return res.status(404).send("restaurant avec cet id n'existe pas");
+    return res.status(404).send("restaurant avec cette id n'existe pas");
 
   res.send(restaurant);
 });
@@ -152,7 +157,7 @@ router.get("/:id", validateObjectId, auth, async (req, res) => {
   const restaurant = await Restaurant.findById(req.params.id).select("-__v");
 
   if (!restaurant)
-    return res.status(404).send("restaurant avec cet id n'existe pas");
+    return res.status(404).send("restaurant avec cette id n'existe pas");
 });
 
 router.delete("/:id", auth, async (req, res) => {
