@@ -33,6 +33,9 @@ const restaurantSchema = new mongoose.Schema({
     minlength: 5,
     maxlength: 50,
   },
+  qrCode: {
+    type: String,
+  },
 
   latitude: {
     type: Number,

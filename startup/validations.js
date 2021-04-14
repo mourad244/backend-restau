@@ -10,6 +10,7 @@ module.exports = {
       h_fermeture: Joi.string(),
       // email: Joi.string().min(5).max(50),
       telephone: Joi.string(),
+      qrCode: Joi.string(),
       latitude: Joi.number(),
       longitude: Joi.number(),
 

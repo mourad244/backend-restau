@@ -49,7 +49,9 @@ router.post("/", auth, async (req, res) => {
 
   // get path from uploaded data
 
-  const { image: images } = getPathData(req.files);
+  const { image: images, qrCode } = getPathData(req.files);
+  console.log(qrCode);
+
   const {
     nom,
     description,
@@ -76,6 +78,7 @@ router.post("/", auth, async (req, res) => {
   const restaurant = new Restaurant({
     nom: nom,
     images: images ? images.map((file) => file.path) : [],
+    qrCode: qrCode ? qrCode[0].path : "",
     description: description,
     h_ouverture: h_ouverture,
     h_fermeture: h_fermeture,
@@ -103,7 +106,8 @@ router.put("/:id", auth, async (req, res) => {
     return res.status(400).send(error.details[0].message);
   }
 
-  const { image: images } = getPathData(req.files);
+  const { image: images, qrCode } = getPathData(req.files);
+
   const {
     nom,
     description,
@@ -134,7 +138,10 @@ router.put("/:id", auth, async (req, res) => {
   }
 
   if (images) restaurant.images.push(...images.map((file) => file.path));
-
+  if (qrCode) {
+    deleteImages(restaurant.qrCode);
+    restaurant.qrCode = qrCode[0].path;
+  }
   restaurant.nom = nom;
   restaurant.description = description;
   restaurant.h_ouverture = h_ouverture;
@@ -163,6 +170,8 @@ router.get("/:id", validateObjectId, auth, async (req, res) => {
 router.delete("/:id", auth, async (req, res) => {
   const restaurant = await Restaurant.findByIdAndRemove(req.params.id);
   if (restaurant && restaurant.images) deleteImages(restaurant.images);
+  if (restaurant && restaurant.qrCode) deleteImages(restaurant.qrCode);
+
   if (!restaurant)
     return res.status(404).send("restaurant avec cette id n'existe pas");
   res.send(restaurant);

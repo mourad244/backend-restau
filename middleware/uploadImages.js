@@ -41,6 +41,6 @@ const uploadImages = multer({
 // .array("image" || "accessoire", 10);
 
 const uploadImagesMiddleware = util.promisify(
-  uploadImages.fields([{ name: "image" }, { name: "accessoire" }])
+  uploadImages.fields([{ name: "image" }, { name: "qrCode" }])
 );
 module.exports = uploadImagesMiddleware;
