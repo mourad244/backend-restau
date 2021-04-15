@@ -61,18 +61,6 @@ router.post("/", auth, async (req, res) => {
     categorieFoodsId,
   } = req.body;
 
-  // to comments if a another fonction verifies its existance before
-  if (categorieFoodsId) {
-    const categorieFood = await CategorieFood.find({
-      _id: { $in: categorieFoodsId },
-    });
-
-    if (categorieFood.length == 0) {
-      deleteImages(req.files);
-      return res.status(400).send("id categorieFood non trouvé.");
-    }
-  }
-
   const restaurant = new Restaurant({
     nom: nom,
     images: images ? images.map((file) => file.path) : [],
@@ -85,6 +73,14 @@ router.post("/", auth, async (req, res) => {
     longitude: longitude,
     categorieFoodsId: categorieFoodsId,
   });
+
+  // update the categorie when adding new restaurant
+  if (categorieFoodsId.length != 0) {
+    await CategorieFood.find({
+      _id: { $in: categorieFoodsId },
+    }).updateMany({ $set: { restaurantsId: restaurant._id } });
+  }
+
   await restaurant.save();
   res.send(restaurant);
 });
@@ -118,16 +114,10 @@ router.put("/:id", auth, async (req, res) => {
   } = req.body;
 
   // to comments if a another fonction verifies its existance before
-  if (categorieFoodsId) {
-    const categoriesFood = await CategorieFood.find({
-      _id: { $in: categorieFoodsId },
-    });
 
-    if (categoriesFood.length == 0) {
-      deleteImages(req.files);
-      return res.status(400).send("id categorieFood non trouvé.");
-    }
-  }
+  // categoriesFood = await CategorieFood.find({
+  //   _id: { $in: categorieFoodsId },
+  // }).updateMany({ $set: { restaurantsId: restaurant._id } });
 
   const restaurant = await Restaurant.findOne({ _id: req.params.id });
   if (!restaurant) {
@@ -148,6 +138,11 @@ router.put("/:id", auth, async (req, res) => {
   restaurant.latitude = latitude;
   restaurant.longitude = longitude;
   restaurant.categorieFoodsId = categorieFoodsId;
+
+  // updating categorie model when changing categorie of restaurant
+  await CategorieFood.find({
+    _id: { $in: categorieFoodsId },
+  }).updateMany({ $set: { restaurantsId: restaurant._id } });
 
   await restaurant.save();
 
