@@ -50,8 +50,6 @@ router.post("/", auth, async (req, res) => {
   // get path from uploaded data
 
   const { image: images, qrCode } = getPathData(req.files);
-  console.log(qrCode);
-
   const {
     nom,
     description,
@@ -121,11 +119,11 @@ router.put("/:id", auth, async (req, res) => {
 
   // to comments if a another fonction verifies its existance before
   if (categorieFoodsId) {
-    const categorieFood = await CategorieFood.find({
+    const categoriesFood = await CategorieFood.find({
       _id: { $in: categorieFoodsId },
     });
 
-    if (categorieFood.length == 0) {
+    if (categoriesFood.length == 0) {
       deleteImages(req.files);
       return res.status(400).send("id categorieFood non trouvé.");
     }
