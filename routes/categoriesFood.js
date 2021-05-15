@@ -42,7 +42,7 @@ router.post('/', auth, async (req, res) => {
 
 	images.map(async (image) => {
 		await sharp(image.path)
-			.jpeg({ mozjpeg: true })
+			.png({ palette: true })
 			.toFile(path.resolve(image.destination, 'compressed', image.filename));
 		fs.unlinkSync(image.path);
 	});
@@ -109,7 +109,7 @@ router.put('/:id', auth, async (req, res) => {
 	if (images)
 		images.map(async (image) => {
 			await sharp(image.path)
-				.jpeg({ mozjpeg: true })
+				.png({ palette: true })
 				.toFile(path.resolve(image.destination, 'compressed', image.filename));
 			fs.unlinkSync(image.path);
 		});
