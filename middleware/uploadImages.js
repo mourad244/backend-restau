@@ -1,38 +1,28 @@
-const util = require("util");
-const path = require("path");
-const multer = require("multer");
+const util = require('util');
+const path = require('path');
+const multer = require('multer');
 const maxsize = 2 * 1024 * 1024;
 
 var storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "images");
-  },
-  filename: (req, file, cb) => {
-    cb(
-      null,
-      Date.now() +
-        "-" +
-        Math.round(Math.random() * 1e2) +
-        path.extname(file.originalname)
-    );
-  },
+	destination: (req, file, cb) => {
+		cb(null, 'images');
+	},
+	filename: (req, file, cb) => {
+		cb(null, Date.now() + '-' + Math.round(Math.random() * 1e2) + path.extname(file.originalname));
+	}
 });
 const fileFilter = (req, file, cb) => {
-  if (
-    file.mimetype == "image/jpeg" ||
-    file.mimetype == "image/png" ||
-    file.mimetype == "image/jpg"
-  ) {
-    cb(null, true);
-  } else {
-    cb(null, false);
-  }
+	if (file.mimetype == 'image/jpeg' || file.mimetype == 'image/png' || file.mimetype == 'image/jpg') {
+		cb(null, true);
+	} else {
+		cb(null, false);
+	}
 };
 
 const uploadImages = multer({
-  storage: storage,
-  limits: maxsize,
-  fileFilter: fileFilter,
+	storage: storage,
+	limits: maxsize,
+	fileFilter: fileFilter
 });
 // .fields([
 //   { name: "image", maxCount: 4 },
@@ -40,7 +30,5 @@ const uploadImages = multer({
 // ]);
 // .array("image" || "accessoire", 10);
 
-const uploadImagesMiddleware = util.promisify(
-  uploadImages.fields([{ name: "image" }, { name: "qrCode" }])
-);
+const uploadImagesMiddleware = util.promisify(uploadImages.fields([{ name: 'image' }, { name: 'qrCode' }]));
 module.exports = uploadImagesMiddleware;
