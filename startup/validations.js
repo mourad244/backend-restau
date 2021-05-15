@@ -5,7 +5,7 @@ module.exports = {
 		const schema = Joi.object({
 			nom: Joi.string().min(3).max(50).required(),
 			images: Joi.array().allow(null),
-			description: Joi.string().min(3).max(50).required(),
+			description: Joi.string().min(3).max(50),
 			h_ouverture: Joi.string(),
 			h_fermeture: Joi.string(),
 			// email: Joi.string().min(5).max(50),
