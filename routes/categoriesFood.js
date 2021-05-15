@@ -12,20 +12,12 @@ const router = express.Router();
 
 const validateObjectId = require("../middleware/validateObjectId");
 
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   const categoriesFood = await CategorieFood.find()
     .populate("restaurantsId", "nom")
     .select("-__v")
     .sort("nom");
   res.send(categoriesFood);
-});
-
-router.get("/:id", auth, async (req, res) => {
-  const categorieFood = await CategorieFood.findById(req.params.id).select(
-    "-__v"
-  );
-  if (!categorieFood) return res.status(404).send("rendez vous n'existe pas");
-  res.send(categorieFood);
 });
 
 router.post("/", auth, async (req, res) => {
@@ -103,7 +95,7 @@ router.put("/:id", auth, async (req, res) => {
   const categorieFood = await CategorieFood.findOne({ _id: req.params.id });
   if (!categorieFood) {
     deleteImages(req.files);
-    return res.status(404).send("rendez vous avec cet id n'existe pas");
+    return res.status(404).send("categorie Food avec cet id n'existe pas");
   }
 
   if (images) categorieFood.images.push(...images.map((file) => file.path));
@@ -118,7 +110,7 @@ router.put("/:id", auth, async (req, res) => {
   res.send(categorieFood);
 });
 
-router.get("/:id", validateObjectId, auth, async (req, res) => {
+router.get("/:id", validateObjectId, async (req, res) => {
   const categorieFood = await CategorieFood.findById(req.params.id).select(
     "-__v"
   );
@@ -129,10 +121,10 @@ router.get("/:id", validateObjectId, auth, async (req, res) => {
 
 router.delete("/:id", auth, async (req, res) => {
   const categorieFood = await CategorieFood.findByIdAndRemove(req.params.id);
-  if (categorieFood && categorieFood.images) deleteImages(categorieFood.images);
-
   if (!categorieFood)
     return res.status(404).send("categorieFood avec cette id n'existe pas");
+  if (categorieFood.images) deleteImages(categorieFood.images);
+
   res.send(categorieFood);
 });
 

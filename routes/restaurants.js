@@ -13,7 +13,7 @@ const _ = require("lodash");
 
 const validateObjectId = require("../middleware/validateObjectId");
 
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   const restaurants = await Restaurant.find()
     .populate("categorieFoodsId", "nom")
     .select("-__v")
@@ -21,8 +21,9 @@ router.get("/", auth, async (req, res) => {
   res.send(restaurants);
 });
 
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", validateObjectId, async (req, res) => {
   const restaurant = await Restaurant.findById(req.params.id).select("-__v");
+
   if (!restaurant)
     return res.status(404).send("restaurant avec cette id n'existe pas");
   res.send(restaurant);
@@ -151,13 +152,6 @@ router.put("/:id", auth, async (req, res) => {
     return res.status(404).send("restaurant avec cette id n'existe pas");
 
   res.send(restaurant);
-});
-
-router.get("/:id", validateObjectId, auth, async (req, res) => {
-  const restaurant = await Restaurant.findById(req.params.id).select("-__v");
-
-  if (!restaurant)
-    return res.status(404).send("restaurant avec cette id n'existe pas");
 });
 
 router.delete("/:id", auth, async (req, res) => {

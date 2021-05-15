@@ -9,7 +9,7 @@ const router = express.Router();
 
 const validateObjectId = require("../middleware/validateObjectId");
 
-router.get("/", auth, async (req, res) => {
+router.get("/", async (req, res) => {
   const foods = await Food.find()
     .populate("restaurantId", "nom")
     .select("-__v")
@@ -18,7 +18,7 @@ router.get("/", auth, async (req, res) => {
   res.send(foods);
 });
 
-router.get("/:id", auth, async (req, res) => {
+router.get("/:id", async (req, res) => {
   const food = await Food.findById(req.params.id).select("-__v");
   if (!food) return res.status(404).send("food avec cette id n'existe pas");
   res.send(food);
@@ -111,7 +111,7 @@ router.put("/:id", auth, async (req, res) => {
   res.send(food);
 });
 
-router.get("/:id", validateObjectId, auth, async (req, res) => {
+router.get("/:id", validateObjectId, async (req, res) => {
   const food = await Food.findById(req.params.id).select("-__v");
 
   if (!food) return res.status(404).send("food avec cet id n'existe pas");
