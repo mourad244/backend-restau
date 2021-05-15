@@ -6,13 +6,9 @@ const deleteImages = require('../middleware/deleteImages');
 const getPathData = require('../middleware/getPathData');
 const { Restaurant } = require('../models/restaurant');
 const validations = require('../startup/validations');
-
-const fs = require('fs');
-const path = require('path');
+const compressImage = require('../utils/compressImage');
 const router = express.Router();
-
 const validateObjectId = require('../middleware/validateObjectId');
-const sharp = require('sharp');
 
 router.get('/', async (req, res) => {
 	const categoriesFood = await CategorieFood.find().populate('restaurantsId', 'nom').select('-__v').sort('nom');
@@ -40,12 +36,7 @@ router.post('/', auth, async (req, res) => {
 
 	const { image: images } = getPathData(req.files);
 
-	images.map(async (image) => {
-		await sharp(image.path)
-			.png({ palette: true })
-			.toFile(path.resolve(image.destination, 'compressed', image.filename));
-		fs.unlinkSync(image.path);
-	});
+	if (images) compressImage(images);
 
 	const { nom, restaurantsId } = req.body;
 
@@ -106,19 +97,13 @@ router.put('/:id', auth, async (req, res) => {
 
 	const { image: images } = getPathData(req.files);
 
-	if (images)
-		images.map(async (image) => {
-			await sharp(image.path)
-				.png({ palette: true })
-				.toFile(path.resolve(image.destination, 'compressed', image.filename));
-			fs.unlinkSync(image.path);
-		});
-
-	if (images)
-		categorieFood.images.push(...images.map((image) => image.destination + '/compressed/' + image.filename));
-
 	categorieFood.nom = nom;
 	categorieFood.restaurantsId = restaurantsId;
+
+	if (images) {
+		compressImage(images);
+		categorieFood.images.push(...images.map((image) => image.destination + '/compressed/' + image.filename));
+	}
 
 	await categorieFood.save();
 
