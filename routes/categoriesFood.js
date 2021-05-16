@@ -38,23 +38,23 @@ router.post('/', auth, async (req, res) => {
 
 	if (images) compressImage(images);
 
-	const { nom, restaurantsId } = req.body;
+	const { nom /* restaurantsId */ } = req.body;
 
-	// to comments if a another fonction verifies its existance before
-	if (restaurantsId) {
-		const restaurant = await Restaurant.find({
-			_id: { $in: restaurantsId }
-		});
-		if (restaurant.length == 0) {
-			deleteImages(req.files);
-			return res.status(400).send('id restaurant non trouvé.');
-		}
-	}
+	// // to comments if a another fonction verifies its existance before
+	// if (restaurantsId) {
+	// 	const restaurant = await Restaurant.find({
+	// 		_id: { $in: restaurantsId }
+	// 	});
+	// 	if (restaurant.length == 0) {
+	// 		deleteImages(req.files);
+	// 		return res.status(400).send('id restaurant non trouvé.');
+	// 	}
+	// }
 
 	const categorieFood = new CategorieFood({
 		nom: nom,
-		images: images ? images.map((image) => image.destination + '/compressed/' + image.filename) : [],
-		restaurantsId: restaurantsId
+		images: images ? images.map((image) => image.destination + '/compressed/' + image.filename) : []
+		/* 		restaurantsId: restaurantsId*/
 	});
 	await categorieFood.save();
 	res.send(categorieFood);
@@ -82,23 +82,23 @@ router.put('/:id', auth, async (req, res) => {
 		deleteImages(req.files);
 		return res.status(404).send("categorie Food avec cet id n'existe pas");
 	}
-	const { nom, restaurantsId } = req.body;
+	const { nom /* restaurantsId */ } = req.body;
 
-	if (restaurantsId) {
+	/* if (restaurantsId) {
 		const restaurant = await Restaurant.find({
 			_id: { $in: restaurantsId }
-		});
+		}); */
 
-		if (restaurant.length == 0) {
+	/* if (restaurant.length == 0) {
 			deleteImages(req.files);
 			return res.status(400).send('id restaurant non trouvé.');
 		}
-	}
+	} */
 
 	const { image: images } = getPathData(req.files);
 
 	categorieFood.nom = nom;
-	categorieFood.restaurantsId = restaurantsId;
+	// categorieFood.restaurantsId = restaurantsId;
 
 	if (images) {
 		compressImage(images);

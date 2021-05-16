@@ -34,8 +34,8 @@ module.exports = {
 	categorieFood: (categorieFoodObj) => {
 		const schema = Joi.object({
 			nom: Joi.string().min(3).max(10).required(),
-			images: Joi.array().allow(null),
-			restaurantsId: Joi.array().items(Joi.objectId())
+			images: Joi.array().allow(null)
+			// restaurantsId: Joi.array().items(Joi.objectId())
 		});
 		return schema.validate(categorieFoodObj);
 	},

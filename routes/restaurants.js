@@ -3,7 +3,7 @@ const auth = require('../middleware/auth');
 const express = require('express');
 const uploadImages = require('../middleware/uploadImages');
 const deleteImages = require('../middleware/deleteImages');
-const { CategorieFood } = require('../models/categorieFood');
+// const { CategorieFood } = require('../models/categorieFood');
 const validations = require('../startup/validations');
 const getPathData = require('../middleware/getPathData');
 const compressImage = require('../utils/compressImage');
@@ -63,11 +63,11 @@ router.post('/', auth, async (req, res) => {
 	});
 
 	// update the categorie when adding new restaurant
-	if (categorieFoodsId && categorieFoodsId.length != 0) {
-		await CategorieFood.find({
-			_id: { $in: categorieFoodsId }
-		}).updateMany({ $set: { restaurantsId: restaurant._id } });
-	}
+	// if (categorieFoodsId && categorieFoodsId.length != 0) {
+	// 	await CategorieFood.find({
+	// 		_id: { $in: categorieFoodsId }
+	// 	}).updateMany({ $set: { restaurantsId: restaurant._id } });
+	// }
 
 	await restaurant.save();
 	res.send(restaurant);
@@ -123,9 +123,9 @@ router.put('/:id', auth, async (req, res) => {
 	restaurant.categorieFoodsId = categorieFoodsId;
 
 	// updating categorie model when changing categorie of restaurant
-	await CategorieFood.find({
-		_id: { $in: categorieFoodsId }
-	}).updateMany({ $set: { restaurantsId: restaurant._id } });
+	// await CategorieFood.find({
+	// 	_id: { $in: categorieFoodsId }
+	// }).updateMany({ $set: { restaurantsId: restaurant._id } });
 
 	await restaurant.save();
 
@@ -142,6 +142,15 @@ router.delete('/:id', auth, async (req, res) => {
 
 	if (!restaurant) return res.status(404).send("restaurant avec cette id n'existe pas");
 	res.send(restaurant);
+});
+
+router.get('/categoriefood/:id', async (req, res) => {
+	const restaurants = await Restaurant.find({
+		//find restaurant having id of categorie in categorieFoodsId
+		categorieFoodsId: { $in: req.params.id }
+	});
+	if (!restaurants) return res.status(404).send("aucun restaurant n'appartient a cette categorie de restaurant");
+	res.send(restaurants);
 });
 
 module.exports = router;
